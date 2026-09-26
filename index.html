@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=overlays-content">
+<meta name="theme-color" content="#070a12">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style.css">
+<title>GuildPlay</title>
+</head>
+<body>
+<div id="setup" class="setup-overlay">
+  <div class="setup-card">
+    <div class="brand-mark">GP</div>
+    <h1>Welcome to GuildPlay</h1>
+    <p>Choose your player identity to enter the arcade.</p>
+    <label class="field-label">Player name</label>
+    <input id="setup-name" maxlength="20" placeholder="Enter your name" autocomplete="off">
+    <label class="field-label">Profile picture</label>
+    <div id="avatar-grid" class="avatar-grid"></div>
+    <button id="enter-btn" class="primary-btn">Enter GuildPlay</button>
+  </div>
+</div>
+
+<div id="app" class="app hidden">
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <button id="install-btn" class="install-pill-btn hidden">Install</button>
+    </div>
+    <nav class="nav-tabs" aria-label="Main navigation">
+      <button class="nav-btn active" data-tab="games" title="Games"><span>🎮</span><small>Games</small></button>
+      <button class="nav-btn" data-tab="friends" title="Friends"><span>👥</span><small>Friends</small></button>
+      <button class="nav-btn" data-tab="requests" title="Friend Requests"><span>🔎</span><small>Requests</small></button>
+      <button class="nav-btn" data-tab="room" title="Room"><span>🏠</span><small>Room</small></button>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <section id="tab-games" class="tab-view active-view">
+      <div class="hero">
+        <div><span class="eyebrow">LOCAL ARCADE</span><h2>Pick a game. Take your turn.</h2><p>Games here run locally on this device. Multiplayer room play will use the same game cards later.</p></div>
+        <div class="hero-art">✦</div>
+      </div>
+      <div class="section-head"><h3>Games</h3><span>Solo / local</span></div>
+      <div id="game-grid" class="game-grid"></div>
+    </section>
+
+    <section id="tab-friends" class="tab-view">
+      <div class="split-layout">
+        <div class="panel friends-panel"><div class="panel-title"><h3>Friends</h3><span id="friend-count">0</span></div><div id="friends-list" class="list"></div></div>
+        <div class="panel chat-panel"><div class="chat-header"><div><h3 id="chat-title">Direct Chat</h3><span id="chat-status">Select a friend</span></div></div><div id="direct-messages" class="messages empty-chat">Choose a friend to start chatting.</div><form id="direct-form" class="chat-input"><input id="direct-input" placeholder="Write a message..." autocomplete="off"><button type="submit">Send</button></form></div>
+      </div>
+    </section>
+
+    <section id="tab-requests" class="tab-view">
+      <div class="request-layout">
+        <div class="panel search-panel"><div class="panel-title"><h3>Find a Friend</h3></div><div class="search-row"><input id="friend-search" placeholder="Search by UID or name" autocomplete="off"><button id="search-btn" class="primary-btn">Search</button></div><div id="search-result"></div></div>
+        <div class="panel"><div class="panel-title"><h3>Friend Requests</h3><span id="request-count">0</span></div><div id="requests-list" class="list"></div></div>
+      </div>
+    </section>
+
+<section id="tab-room" class="tab-view">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h2 style="margin:0;">Room</h2>
+        <button id="room-action-btn" class="primary-btn" onclick="toggleRoomState()" style="padding:6px 14px;">Create</button>
+      </div>
+
+      <div id="room-content-wrapper" class="room-locked">
+        <div class="room-layout">
+          <div class="panel room-main">
+            <div class="panel-title"><h3>Room <span id="room-code">GP-ROOM</span></h3><span id="member-count">1/8</span></div>
+            <div id="room-members" class="member-list"></div>
+            <div class="room-game"><label>Choose game</label><select id="room-game-select"></select><button id="room-play" class="primary-btn">Play</button></div>
+            <div class="group-chat panel-inset"><div class="panel-title"><h3>Group Chat</h3><div class="voice-tools"><button id="mic-btn" title="Mic">🎙</button><button id="speaker-btn" title="Speaker">🔊</button></div></div><div id="group-messages" class="messages"></div><form id="group-form" class="chat-input"><input id="group-input" placeholder="Message the room..." autocomplete="off"><button type="submit">Send</button></form></div>
+          </div>
+          <div class="panel invite-panel"><div class="panel-title"><h3>Invite</h3><span>Max 8</span></div><div id="invite-list" class="list"></div></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="game-modal" class="game-modal hidden">
+  <button id="game-exit" class="game-exit">Exit</button>
+  
+  <!-- Chat wrapper with button and dropdown panel right below it -->
+  <div id="game-chat-wrapper" class="game-chat-wrapper hidden">
+    <button id="game-chat-toggle" class="game-chat-toggle">Chat</button>
+    <div id="game-group-chat" class="game-group-chat hidden">
+      <div id="game-group-messages" class="messages"></div>
+      <form id="game-group-form" class="chat-input-row">
+        <input id="game-group-input" placeholder="Message..." autocomplete="off">
+        <div class="in-game-tools">
+          <button type="button" id="game-mic-btn" class="tool-btn" title="Mic">🎙</button>
+          <button type="button" id="game-speaker-btn" class="tool-btn" title="Speaker">🔊</button>
+        </div>
+        <button type="submit" class="send-btn">Send</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="game-stage" class="game-stage"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js"></script>
+<script>if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name":"GuildPlay Arcade Hub",
+  "short_name":"GuildPlay",
+  "start_url":"./index.html",
+  "display":"fullscreen",
+  "orientation":"landscape",
+  "background_color":"#070a12",
+  "theme_color":"#070a12",
+  "description":"A lightweight multiplayer arcade hub.",
+  "icons":[
+    {"src":"https://api.dicebear.com/9.x/bottts/svg?seed=GuildPlayIcon","sizes":"192x192","type":"image/svg+xml","purpose":"any maskable"},
+    {"src":"https://api.dicebear.com/9.x/bottts/svg?seed=GuildPlayIcon","sizes":"512x512","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
