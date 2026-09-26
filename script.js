@@ -4,8 +4,9 @@ const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE
 
 const AVATARS = Array.from({length:12}, (_,i) => `https://api.dicebear.com/9.x/bottts/svg?seed=GuildPlay${i+1}`);
 const GAMES = [
-  {id:'ttt', name:'Neon Tic Tac Toe', icon:'✕', desc:'Two turns on one device.'},
-  {id:'snake', name:'Neon Snake', icon:'🐍', desc:'Classic local arcade challenge.'}
+  { id: 'dotdome', name: 'Dot Dome', icon: '⚄', desc: 'Multiplayer territory capture.' },
+  { id: 'ttt', name: 'Neon Tic Tac Toe', icon: '✕', desc: 'Two turns on one device.' },
+  { id: 'snake', name: 'Neon Snake', icon: '🐍', desc: 'Classic local arcade challenge.' }
 ];
 
 let player = JSON.parse(localStorage.getItem('gp_player') || 'null');
@@ -324,6 +325,16 @@ function joinRoomRealtime(){
           try { await pc.addIceCandidate(new RTCIceCandidate(data.candidate)); } catch(e){}
         }
       })
+      // Dot Dome Game Events
+    .on('broadcast', { event: 'dotdome_event' }, payload => {
+      const frame = $('#dotdome-frame');
+      if(frame && frame.contentWindow){
+        frame.contentWindow.postMessage({
+          type: 'DOTDOME_REMOTE_ACTION',
+          payload: payload.payload
+        }, '*');
+      }
+    })
       .subscribe(async (status) => {
         if(status === 'SUBSCRIBED'){
           await roomChannel.track({
@@ -865,12 +876,32 @@ function openGame(id, isRoom = false){
     else chatWrapper.classList.add('hidden');
   }
   const stage = $('#game-stage');
-  if(stage){
-    if(id === 'ttt') renderTTT(stage);
-    else renderSnake(stage);
+  if(!stage) return;
+
+  if(id === 'dotdome'){
+    // Dot Dome ko responsive iframe ke roop me load karein
+    stage.innerHTML = `
+      <iframe id="dotdome-frame" src="dotdome.html" 
+        style="width:100%; height:100%; border:none; background:transparent;" 
+        allow="autoplay"></iframe>
+    `;
+    const frame = $('#dotdome-frame');
+    frame.onload = () => {
+      frame.contentWindow.postMessage({
+        type: 'INIT_ROOM_PLAYERS',
+        payload: {
+          players: room.members,
+          myUid: player.uid,
+          isHost: player.uid === room.ownerUid
+        }
+      }, '*');
+    };
+  } else if(id === 'ttt'){
+    renderTTT(stage);
+  } else {
+    renderSnake(stage);
   }
 }
-
 function closeGame(){
   document.exitFullscreen?.().catch(()=>{});
   $('#game-modal')?.classList.add('hidden');
@@ -910,7 +941,6 @@ function renderTTT(stage){
     $('#ttt-msg').textContent = `Turn: ${turn}`;
   });
 }
-
 function renderSnake(stage){
   stage.innerHTML = `
     <div class="game-screen">
@@ -919,9 +949,19 @@ function renderSnake(stage){
     </div>
   `;
 }
-
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', setup);
 } else {
   setup();
 }
+window.addEventListener('message', e => {
+  if(e.data && e.data.type === 'DOTDOME_LOCAL_ACTION'){
+    if(roomChannel){
+      roomChannel.send({
+        type: 'broadcast',
+        event: 'dotdome_event',
+        payload: e.data.payload
+      });
+    }
+  }
+});
